@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Playwright Testing Guide</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .playwright-logo {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 20px;
+            background: #45ba4b;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            background: #f8f9fa;
+            border: none;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #495057;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .tab:hover {
+            background: #e9ecef;
+        }
+
+        .tab.active {
+            background: white;
+            color: #007bff;
+            border-bottom: 3px solid #007bff;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 40px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .test-type-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .test-type-header h2 {
+            font-size: 2rem;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .test-type-header .icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            color: white;
+        }
+
+        .ui-icon { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .api-icon { background: linear-gradient(135deg, #f093fb, #f5576c); }
+        .unit-icon { background: linear-gradient(135deg, #4facfe, #00f2fe); }
+
+        .tips-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .tip-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border-left: 5px solid;
+            transition: transform 0.3s ease;
+        }
+
+        .tip-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .ui-card { border-left-color: #667eea; }
+        .api-card { border-left-color: #f5576c; }
+        .unit-card { border-left-color: #4facfe; }
+
+        .tip-card h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .tip-card ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .tip-card li {
+            margin-bottom: 10px;
+            padding-left: 25px;
+            position: relative;
+            line-height: 1.6;
+        }
+
+        .tip-card li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #28a745;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .code-example {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 40px 20px 20px 20px;
+            border-radius: 10px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            margin-top: 30px;
+            position: relative;
+            white-space: pre-line;
+        }
+
+        .code-example:before {
+            content: "Code Example";
+            position: absolute;
+            top: 5px;
+            left: 15px;
+            background: #4a5568;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+        }
+
+        .workflow {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 30px 0;
+            border-left: 5px solid;
+        }
+
+        .ui-workflow { border-left-color: #667eea; }
+        .api-workflow { border-left-color: #f5576c; }
+        .unit-workflow { border-left-color: #4facfe; }
+
+        .workflow h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.4rem;
+        }
+
+        .workflow-steps {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .workflow-step {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            min-width: 140px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .workflow-step:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .workflow-step.highlight {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .workflow-step .step-number {
+            background: #007bff;
+            color: white;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin: 0 auto 10px;
+        }
+
+        .workflow-step .step-title {
+            font-weight: 600;
+            font-size: 0.9rem;
+            line-height: 1.3;
+        }
+
+        .arrow {
+            font-size: 1.5rem;
+            color: #6c757d;
+            margin: 0 5px;
+        }
+
+        .best-practices {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-top: 30px;
+        }
+
+        .best-practices h3 {
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .best-practices ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .best-practices li {
+            margin-bottom: 12px;
+            padding-left: 25px;
+            position: relative;
+            line-height: 1.6;
+        }
+
+        .best-practices li:before {
+            content: "★";
+            position: absolute;
+            left: 0;
+            color: #ffd700;
+            font-size: 1.1rem;
+        }
+
+        .keyword {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .tips-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .tab {
+                font-size: 1rem;
+                padding: 15px 10px;
+            }
+
+            .workflow-steps {
+                flex-direction: column;
+            }
+            
+            .arrow {
+                transform: rotate(90deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="playwright-logo">🎭</div>
+            <h1>Playwright Testing Guide</h1>
+            <p>Complete guide to creating effective test cases</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('ui')">🖥️ UI Testing</button>
+            <button class="tab" onclick="showTab('api')">🔌 API Testing</button>
+            <button class="tab" onclick="showTab('unit')">⚙️ Unit Testing</button>
+        </div>
+
+        <div id="ui" class="tab-content active">
+            <div class="test-type-header">
+                <div class="icon ui-icon">🖥️</div>
+                <h2>UI Testing</h2>
+                <p>User interface automation testing</p>
+            </div>
+
+            <div class="tips-grid">
+                <div class="tip-card ui-card">
+                    <h3>🎯 Selectors & Locators</h3>
+                    <ul>
+                        <li>Use <span class="keyword">data-testid</span> for stable selectors</li>
+                        <li>Avoid CSS classes meant for styling as selectors</li>
+                        <li>Prefer roles and accessible names</li>
+                        <li>Use <span class="keyword">page.getByRole()</span> for semantic elements</li>
+                    </ul>
+                </div>
+
+                <div class="tip-card ui-card">
+                    <h3>⏱️ Waits & Timeouts</h3>
+                    <ul>
+                        <li>Use <span class="keyword">expect().toBeVisible()</span> instead of sleep</li>
+                        <li>Configure reasonable timeouts for slow operations</li>
+                        <li>Wait for content loading with <span class="keyword">waitForLoadState</span></li>
+                        <li>Use <span class="keyword">waitForSelector</span> for dynamic elements</li>
+                    </ul>
+                </div>
+
+                <div class="tip-card ui-card">
+                    <h3>📱 Responsive & Devices</h3>
+                    <ul>
+                        <li>Test on different screen sizes</li>
+                        <li>Use <span class="keyword">viewport</span> configuration</li>
+                        <li>Check mobile gestures and events</li>
+                        <li>Test touch events separately</li>
+                    </ul>
+                </div>
+
+                <div class="tip-card ui-card">
+                    <h3>🔍 Interactions</h3>
+                    <ul>
+                        <li>Click, type text step by step</li>
+                        <li>Check states before and after actions</li>
+                        <li>Test keyboard navigation</li>
+                        <li>Use <span class="keyword">hover()</span> for hover effects</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="workflow ui-workflow">
+                <h3>🔄 UI Testing Workflow</h3>
+                <div class="workflow-steps">
+                    <div class="workflow-step" data-step="1">
+                        <div class="step-number">1</div>
+                        <div class="step-title">Launch Browser</div>
+                    </div>
+                    <div class="arrow">→</div>
+                    <div class="workflow-step" data-step="2">
+                        <div class="step-number">2</div>
+                        <div class="step-title">Navigate to URL</div>
+                    </div>
+                    <div class="arrow">→</div>
+                    <div class="workflow-step" data-step="3">
+                        <div class="step-number">3</div>
+                        <div class="step-title">Interact with Elements</div>
+                    </div>
+                    <div class="arrow">→</div>
+                    <div class="workflow-step" data-step="4">
+                        <div class="step-number">4</div>
+                        <div class="step-title">Assert Expected Outcomes</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="code-example">test('Registration form submission', async ({ page }) => {
+  // Navigate to page
+  await page.goto('/register');
+  
+  // Interact with elements
+  await page.getByLabel('Email').fill('test@example.com');
+  await page.getByLabel('Password').fill('securePassword123');
+  await page.getByRole('button', { name: 'Register' }).click();
+  
+  // Assert expected outcomes
+  await expect(page.getByText('Welcome!')).toBeVisible();
+});
+            </div>
+
+            <div class="best-practices">
+                <h3>✨ UI Testing Best Practices</h3>
+                <ul>
+                    <li>Create Page Object Model for reusability</li>
+                    <li>Group related tests in describe blocks</li>
+                    <li>Use beforeEach for common setup</li>
+                    <li>Take screenshots on test failures</li>
+                    <li>Test critical user journey first</li>
+                </ul>
+            </div>
+        </div>
+
+        <div id="api" class="tab-content">
+            <div class="test-type-header">
+                <div class="icon api-icon">🔌</div>
+                <h2>API Testing</h2>
+                <p>REST API and GraphQL testing</p>
+            </div>
+
+            <div class="tips-grid">
+                <div class="tip-card api-card">
+                    <h3>🌐 HTTP Requests</h3>
+                    <ul>
+                        <li>Use <span class="keyword">request.get/post/put/delete</span></li>
+                        <li>Check response status codes</li>
+                        <li>Validate JSON response structure</li>
+                        <li>Test different HTTP methods</li>
+                    </ul>
+                </div>
+
+                <div class="tip-card api-card">
+                    <h3>🔐 Authentication</h3>
+                    <ul>
+                        <li>Use <span class="keyword">storageState</span> for sessions</li>
+                        <li>Test JWT tokens and expiration</li>
+                        <li>Check access permissions to endpoints</li>
+                        <li>Test OAuth and SSO flows</li>
+                    </ul>
+                </div>
+
+                <div class="tip-card api-card">
+                    <h3>📊 Data & Validation</h3>
+                    <ul>
+                        <li>Check required fields in responses</li>
+                        <li>Test boundary values</li>
+                        <li>Validate data types with JSON Schema</li>
+                        <li>Test pagination and filtering</li>
+                    </ul>
+                </div>
+
+                <div class="tip-card api-card">
+                    <h3>⚡ Performance</h3>
+                    <ul>
+                        <li>Measure API response times</li>
+                        <li>Load test critical endpoints</li>
+                        <li>Check response payload sizes</li>
+                        <li>Monitor memory usage</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="workflow api-workflow">
+                <h3>🔄 API Testing Workflow</h3>
+                <div class="workflow-steps">
+                    <div class="workflow-step" data-step="1">
+                        <div class="step-number">1</div>
+                        <div class="step-title">Setup Request</div>
+                    </div>
+                    <div class="arrow">→</div>
+                    <div class="workflow-step" data-step="2">
+                        <div class="step-number">2</div>
+                        <div class="step-title">Send Request</div>
+                    </div>
+                    <div class="arrow">→</div>
+                    <div class="workflow-step" data-step="3">
+                        <div class="step-number">3</div>
+                        <div class="step-title">Get Response</div>
+                    </div>
+                    <div class="arrow">→</div>
+                    <div class="workflow-step" data-step="4">
+                        <div class="step-number">4</div>
+                        <div class="step-title">Assert Status</div>
+                    </div>
+                    <div class="arrow">→</div>
+                    <div class="workflow-step" data-step="5">
+                        <div class="step-number">5</div>
+                        <div class="step-title">Verify Data</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="code-example">test('API: Create user', async ({ request }) => {
+  // Setup request
+  const userData = {
+    name: 'John Doe',
+    email: 'john@example.com',
+    role: 'user'
+  };
+  
+  // Send request
+  const response = await request.post('/api/users', {
+    data: userData
+  });
+  
+  // Assert status
+  expect(response.status()).toBe(201);
+  
+  // Get response and verify data
+  const user = await response.json();
+  expect(user).toHaveProperty('id');
+  expect(user.email).toBe('john@example.com');
+  expect(user.role).toBe('user');
+});
+            </div>
+
+            <div class="best-practices">
+                <h3>✨ API Testing Best Practices</h3>
+                <ul>
+                    <li>Create test data via API, not through UI</li>
+                    <li>Use fixtures for recurring data</li>
+                    <li>Test both positive and negative scenarios</li>
+                    <li>Clean up test data after execution</li>
+                    <li>Document API contracts through tests</li>
+                </ul>
+            </div>
+        </div>
+
+        <div id="unit" class="tab-content">
+            <div class="test-type-header">
+                <div class="icon unit-icon">⚙️</div>
+                <h2>Unit Testing</h2>
+                <p>Testing individual functions and components</p>
+            </div>
+
+            <div class="tips-grid">
+                <div class="tip-card unit-card">
+                    <h3>🧩 Isolation & Mocks</h3>
+                    <ul>
+                        <li>Mock external dependencies</li>
+                        <li>Use <span class="keyword">vi.mock()</span> for modules</li>
+                        <li>Test one function at a time</li>
+                        <li>Avoid testing implementation details</li>
+                    </ul>
+                </div>
+
+                <div class="tip-card unit-card">
+                    <h3>📋 Test Structure</h3>
+                    <ul>
+                        <li>Follow <span class="keyword">Arrange-Act-Assert</span> pattern</li>
+                        <li>One assert per test (when possible)</li>
+                        <li>Descriptive test names</li>
+                        <li>Group tests by functionality</li>
+                    </ul>
+                </div>
+
+                <div class="tip-card unit-card">
+                    <h3>🎯 Code Coverage</h3>
+                    <ul>
+                        <li>Aim for 80%+ coverage of important code</li>
+                        <li>Test edge cases and error handling</li>
+                        <li>Cover all conditional logic branches</li>
+                        <li>Use <span class="keyword">--coverage</span> flag</li>
+                    </ul>
+                </div>
+
+                <div class="tip-card unit-card">
+                    <h3>🔧 Test Utilities</h3>
+                    <ul>
+                        <li>Create factory functions for test data</li>
+                        <li>Use <span class="keyword">beforeEach/afterEach</span> for cleanup</li>
+                        <li>Parameterize tests for different inputs</li>
+                        <li>Create helper functions for common operations</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="workflow unit-workflow">
+                <h3>🔄 Unit Testing Workflow</h3>
+                <div class="workflow-steps">
+                    <div class="workflow-step" data-step="1">
+                        <div class="step-number">1</div>
+                        <div class="step-title">Setup/Import Function</div>
+                    </div>
+                    <div class="arrow">→</div>
+                    <div class="workflow-step" data-step="2">
+                        <div class="step-number">2</div>
+                        <div class="step-title">Prepare Test Data</div>
+                    </div>
+                    <div class="arrow">→</div>
+                    <div class="workflow-step" data-step="3">
+                        <div class="step-number">3</div>
+                        <div class="step-title">Execute Function</div>
+                    </div>
+                    <div class="arrow">→</div>
+                    <div class="workflow-step" data-step="4">
+                        <div class="step-number">4</div>
+                        <div class="step-title">Assert Outcomes</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="code-example">// Setup/Import function
+import { test, expect, vi } from '@playwright/test';
+import { calculateDiscount } from '../src/utils';
+
+test.describe('Discount calculation', () => {
+  test('should correctly calculate 10% discount', () => {
+    // Prepare test data (Arrange)
+    const price = 100;
+    const discountPercent = 10;
+    
+    // Execute function (Act)
+    const result = calculateDiscount(price, discountPercent);
+    
+    // Assert outcomes (Assert)
+    expect(result).toBe(90);
+  });
+});
+            </div>
+
+            <div class="best-practices">
+                <h3>✨ Unit Testing Best Practices</h3>
+                <ul>
+                    <li>Tests should be fast and independent</li>
+                    <li>Test behavior, not implementation</li>
+                    <li>Use clear names for tests and variables</li>
+                    <li>Refactor tests alongside code regularly</li>
+                    <li>Write tests before or with code (TDD)</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showTab(tabName) {
+            // Hide all tabs
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(content => content.classList.remove('active'));
+            
+            // Remove active class from buttons
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to button
+            event.target.classList.add('active');
+        }
+
+        // Add interactivity for workflow steps
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.tip-card');
+            cards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-8px) scale(1.02)';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0) scale(1)';
+                });
+            });
+
+            // Interactivity for workflow steps
+            const workflowSteps = document.querySelectorAll('.workflow-step');
+            workflowSteps.forEach(step => {
+                step.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-3px) scale(1.05)';
+                    this.style.background = 'linear-gradient(135deg, #667eea, #764ba2)';
+                    this.style.color = 'white';
+                });
+                
+                step.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0) scale(1)';
+                    this.style.background = 'white';
+                    this.style.color = 'inherit';
+                });
+            });
+        });
+    </script>
+</body>
+</html>
